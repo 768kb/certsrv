@@ -36,6 +36,7 @@ setup(
         ],
     extras_require={
         'ntlm': ['requests_ntlm'],
+        'kerberos': ['requests_kerberos'],
         },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
