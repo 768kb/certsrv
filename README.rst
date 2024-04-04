@@ -36,6 +36,13 @@ Or, if you want NTLM support:
     $ pip install certsrv[ntlm]
 
 
+Or, if you want Kerberos support:
+
+.. code-block:: bash
+
+    $ pip install certsrv[kerberos]
+
+
 Documentation
 -------------
 
