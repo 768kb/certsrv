@@ -56,7 +56,7 @@ class Certsrv(object):
         username: The username for authentication.
         password: The password for authentication.
         auth_method: The chosen authentication method. Either 'basic' (the default),
-            'ntlm' or 'cert' (SSL client certificate).
+            'ntlm', 'kerberos' (kerberos w/ext auth) or 'cert' (ssl client certificate).
         cafile: A PEM file containing the CA certificates that should be trusted.
         timeout: The timeout to use against the CA server, in seconds.
             The default is 30.
@@ -95,9 +95,11 @@ class Certsrv(object):
         }
 
     def _set_credentials(self, username, password):
-        if self.auth_method == "ntlm":
+        if self.auth_method == "kerberos":
+            from requests_kerberos import HTTPKerberosAuth
+            self.session.auth = HTTPKerberosAuth()
+        elif self.auth_method == "ntlm":
             from requests_ntlm import HttpNtlmAuth
-
             self.session.auth = HttpNtlmAuth(username, password)
         elif self.auth_method == "cert":
             self.session.cert = (username, password)
@@ -323,8 +325,8 @@ class Certsrv(object):
             username: The username for authentication.
             password: The password for authentication.
         """
-        if self.auth_method in ("ntlm", "cert"):
-            # NTLM and SSL is connection based,
+        if self.auth_method in ("ntlm", "cert", "kerberos"):
+            # Kerberos, NTLM and SSL is connection based,
             # so we need to close the connection
             # to be able to re-authenticate
             self.session.close()
@@ -360,7 +362,7 @@ def get_cert(server, csr, template, username, password, encoding="b64", **kwargs
         encoding: The desired encoding for the returned certificate.
             Possible values are 'bin' for binary and 'b64' for Base64 (PEM).
         auth_method: The chosen authentication method. Either 'basic' (the default),
-            'ntlm' or 'cert' (ssl client certificate).
+            'ntlm', 'kerberos' (kerberos w/ext auth) or 'cert' (ssl client certificate).
         cafile: A PEM file containing the CA certificates that should be trusted.
 
     Returns:
@@ -398,7 +400,7 @@ def get_existing_cert(server, req_id, username, password, encoding="b64", **kwar
         encoding: The desired encoding for the returned certificate.
             Possible values are 'bin' for binary and 'b64' for Base64 (PEM).
         auth_method: The chosen authentication method. Either 'basic' (the default),
-            'ntlm' or 'cert' (ssl client certificate).
+            'ntlm', 'kerberos' (kerberos w/ext auth) or 'cert' (ssl client certificate).
         cafile: A PEM file containing the CA certificates that should be trusted.
 
     Returns:
@@ -431,7 +433,7 @@ def get_ca_cert(server, username, password, encoding="b64", **kwargs):
         encoding: The desired encoding for the returned certificate.
             Possible values are 'bin' for binary and 'b64' for Base64 (PEM).
         auth_method: The chosen authentication method. Either 'basic' (the default),
-            'ntlm' or 'cert' (ssl client certificate).
+            'ntlm', 'kerberos' (kerberos w/ext auth) or 'cert' (ssl client certificate).
         cafile: A PEM file containing the CA certificates that should be trusted.
 
     Returns:
@@ -460,7 +462,7 @@ def get_chain(server, username, password, encoding="bin", **kwargs):
         encoding: The desired encoding for the returned certificates.
             Possible values are 'bin' for binary and 'b64' for Base64 (PEM).
         auth_method: The chosen authentication method. Either 'basic' (the default),
-            'ntlm' or 'cert' (ssl client certificate).
+            'ntlm', 'kerberos' (kerberos w/ext auth) or 'cert' (ssl client certificate).
         cafile: A PEM file containing the CA certificates that should be trusted.
 
     Returns:
@@ -487,7 +489,7 @@ def check_credentials(server, username, password, **kwargs):
         username: The username for authentication.
         pasword: The password for authentication.
         auth_method: The chosen authentication method. Either 'basic' (the default),
-            'ntlm' or 'cert' (ssl client certificate).
+            'ntlm', 'kerberos' (kerberos w/ext auth) or 'cert' (ssl client certificate).
         cafile: A PEM file containing the CA certificates that should be trusted.
 
     Returns:
